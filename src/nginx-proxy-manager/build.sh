@@ -74,8 +74,12 @@ sed -i "s/\"version\": \"0.0.0\",/\"version\": \"${NGINX_PROXY_MANAGER_VERSION}\
 sed -i "s/\"version\": \"0.0.0\",/\"version\": \"${NGINX_PROXY_MANAGER_VERSION}\",/" /tmp/nginx-proxy-manager/backend/package.json
 
 log "Patching Nginx Proxy Manager backend..."
+
+# Apply pip install patch using sed (more robust than line-number-specific patch)
+log "Removing virtual environment wrapper from pip install command..."
+sed -i 's|const cmd = .*activate.*pip install --no-cache-dir.*deactivate.*|const cmd = "pip install --no-cache-dir " + plugin.dependencies + " " + plugin.package_name + plugin.version;|g' /tmp/nginx-proxy-manager/backend/lib/certbot.js
+
 PATCHES="
-    pip-install.patch
     remove-certbot-dns-oci.patch
 "
 for P in $PATCHES; do
